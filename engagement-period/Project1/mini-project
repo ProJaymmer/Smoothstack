@@ -1,0 +1,193 @@
+#!/usr/bin/env python3
+# ^^ shebang tells the shell program (bash/zsh) what program will interpret this file
+
+# Importing datetime module to convert the user string input of month and year using .strptime() into datetime data type for comparison of input and the month's cell
+from calendar import month
+from datetime import datetime
+
+# import load workbook
+import openpyxl
+from openpyxl import load_workbook
+
+# import logging
+import logging
+
+# setup logging basic configuration for logging to a file
+logging.basicConfig(filename="mylog.log", format='%(asctime)s - %(message)s',
+                    datefmt='%d-%b-%y %H:%M:%S', level=logging.INFO)
+logging.info('\n\n* * * * * * START OF LOGGING * * * * * *\n')
+
+# Will having months predefined help?
+months = ["Null", "January", "February", "March", "April", "May",
+          "June", "July", "August", "September", "October", "November", "December"]
+
+# Define the filename; the input() method will prompt user entry
+filename = input("Please enter file name (don't forget .xlsx): ")
+
+# This will populate the workbook associated with user input from above
+wb = load_workbook(filename=filename)
+logging.info("File Name: " + filename)
+filedate = filename[23:-5]
+filemonth = filedate[0].upper() + filedate[1:3]
+fileyear = filedate[-2:]
+logging.info("File Date: " + filemonth + " " + fileyear)
+
+# Accept user input that will populate information for the requested date
+date_input = input("Please format month and year as '01/18': ")
+month_and_year = datetime.strptime(date_input, '%m/%y')
+# date formate from above: 2018-02-01 00:00:00
+logging.info("Month and Year Input: " + month_and_year.strftime("%m/%y"))
+
+# These are the sheets in your workbook
+# SUMMARY ROLLING MoM WORKSHEET
+# On this sheet, the rows are contingent on the month; but the column numbers will remain the same.
+ws1 = wb.worksheets[0]
+logging.info("Worksheet: " + ws1.title)
+
+# Checking what the value and data type of the month cell
+# month = ws1.cell(row=13, column=1).value
+# print(month)
+
+for row in ws1.rows:
+    for cell in row:
+        if cell.value == month_and_year:
+            calls_offered = ws1.cell(row=cell.row, column=2).value
+            logging.info("Calls Offered: " + str(calls_offered))
+            abandoned_calls = ws1.cell(row=cell.row, column=3).value
+            logging.info("Abandoned After 30s: " +
+                         "{:.2%}".format(abandoned_calls))
+            FCR = ws1.cell(row=cell.row, column=4).value
+            logging.info("FCR: ""{:.2%}".format(FCR))
+            DSAT = ws1.cell(row=cell.row, column=5).value
+            logging.info("DSAT: ""{:.2%}".format(DSAT))
+            CSAT = ws1.cell(row=cell.row, column=6).value
+            logging.info("CSAT: ""{:.2%}".format(CSAT))
+        # Taking into account the months whose datetime wasn't on the 1st of the month
+        elif type(cell.value) == datetime:
+            # Cannot stringify the cell.value, so stored it in a variable that I could stringify.
+            better_cell = cell.value
+            new_cell = better_cell.strftime("%m/%y")
+            # Created string version of month_and_year in format '01/18' for comparison
+            new_month_and_year = month_and_year.strftime("%m/%y")
+            if new_cell == new_month_and_year:
+                calls_offered = ws1.cell(row=cell.row, column=2).value
+                logging.info("Calls Offered: " + str(calls_offered))
+                abandoned_calls = ws1.cell(row=cell.row, column=3).value
+                logging.info("Abandoned After 30s: " +
+                             "{:.2%}".format(abandoned_calls))
+                FCR = ws1.cell(row=cell.row, column=4).value
+                logging.info("FCR: ""{:.2%}".format(FCR))
+                DSAT = ws1.cell(row=cell.row, column=5).value
+                logging.info("DSAT: ""{:.2%}".format(DSAT))
+                CSAT = ws1.cell(row=cell.row, column=6).value
+                logging.info("CSAT: ""{:.2%}".format(CSAT))
+
+# VOC ROLLING MoM WORKSHEET
+# On this sheet, the rows will stay the same; but the columns are contingent on the month.
+ws2 = wb.worksheets[1]
+logging.info("Worksheet: " + ws2.title)
+# print(type(ws2.cell(row=1, column=2).value))
+for row in ws2.rows:
+    for cell in row:
+        if cell.value == month_and_year:
+            base_size = ws2.cell(row=3, column=cell.column).value
+            promoters = ws2.cell(row=4, column=cell.column).value
+            passives = ws2.cell(row=6, column=cell.column).value
+            detractors = ws2.cell(row=8, column=cell.column).value
+            overall_NPS = ws2.cell(row=13, column=cell.column).value
+            satisfied = ws2.cell(row=16, column=cell.column).value
+            unsatisfied = ws2.cell(row=19, column=cell.column).value
+
+            # Good or Bad Promoter Score
+            logging.info("Net Promoter Score: ")
+            logging.info("Base Size: " + str(base_size))
+            if promoters >= 200:
+                logging.info("                     Promoters: Good")
+            else:
+                logging.info("                     Promoters: Bad")
+            if passives >= 100:
+                logging.info("                     Passives: Good")
+            else:
+                logging.info("                     Passives: Bad")
+            if detractors >= 100:
+                logging.info("                     Detractors: Bad")
+            else:
+                logging.info("                     Detractors: Good")
+
+            logging.info("Satisfied with Agent: " + "{:.2%}".format(satisfied))
+            logging.info("Unsatisfied with Agent: " +
+                         "{:.2%}".format(unsatisfied))
+        # Taking into account the months whose datetime wasn't on the 1st of the month
+        elif type(cell.value) == datetime:
+            # Cannot stringify the cell.value, so stored it in a variable that I could stringify.
+            better_cell = cell.value
+            new_cell = better_cell.strftime("%m/%y")
+            # Created string version of month_and_year in format '01/18' for comparison
+            new_month_and_year = month_and_year.strftime("%m/%y")
+            if new_cell == new_month_and_year:
+                base_size = ws2.cell(row=3, column=cell.column).value
+                promoters = ws2.cell(row=4, column=cell.column).value
+                passives = ws2.cell(row=6, column=cell.column).value
+                detractors = ws2.cell(row=8, column=cell.column).value
+                overall_NPS = ws2.cell(row=13, column=cell.column).value
+                satisfied = ws2.cell(row=16, column=cell.column).value
+                unsatisfied = ws2.cell(row=19, column=cell.column).value
+
+                # Good or Bad Promoter Score
+                logging.info("Net Promoter Score: ")
+                logging.info("Base Size: " + str(base_size))
+                if promoters >= 200:
+                    logging.info("                     Promoters: Good")
+                else:
+                    logging.info("                     Promoters: Bad")
+                if passives >= 100:
+                    logging.info("                     Passives: Good")
+                else:
+                    logging.info("                     Passives: Bad")
+                if detractors >= 100:
+                    logging.info("                     Detractors: Bad")
+                else:
+                    logging.info("                     Detractors: Good")
+
+                logging.info("Satisfied with Agent: " +
+                             "{:.2%}".format(satisfied))
+                logging.info("Unsatisfied with Agent: " +
+                             "{:.2%}".format(unsatisfied))
+        # GETTING ERROR: ValueError: time data 'Net Promoter Score' does not match format '%B'
+        # elif type(cell.value) == str:
+        #     better_cell = cell.value
+        #     # This takes the month's name and creates a string number
+        #     new_cell = str(datetime.strptime(cell.value, "%B").month)
+        #     print(new_cell)
+        #     # This makes the input month a string number
+        #     new_month_and_year = month_and_year.strftime("%m")[1]
+        #     print(new_month_and_year)
+        #     if new_cell == month_and_year:
+        #         base_size = ws2.cell(row=3, column=cell.column).value
+        #         promoters = ws2.cell(row=4, column=cell.column).value
+        #         passives = ws2.cell(row=6, column=cell.column).value
+        #         detractors = ws2.cell(row=8, column=cell.column).value
+        #         overall_NPS = ws2.cell(row=13, column=cell.column).value
+        #         satisfied = ws2.cell(row=16, column=cell.column).value
+        #         unsatisfied = ws2.cell(row=19, column=cell.column).value
+
+        #         # Good or Bad Promoter Score
+        #         logging.info("Net Promoter Score: ")
+        #         logging.info("Base Size: " + str(base_size))
+        #         if promoters >= 200:
+        #             logging.info("                     Promoters: Good")
+        #         else:
+        #             logging.info("                     Promoters: Bad")
+        #         if passives >= 100:
+        #             logging.info("                     Passives: Good")
+        #         else:
+        #             logging.info("                     Passives: Bad")
+        #         if detractors >= 100:
+        #             logging.info("                     Detractors: Bad")
+        #         else:
+        #             logging.info("                     Detractors: Good")
+
+        #         logging.info("Satisfied with Agent: " +
+        #                      "{:.2%}".format(satisfied))
+        #         logging.info("Unsatisfied with Agent: " +
+        #                      "{:.2%}".format(unsatisfied))

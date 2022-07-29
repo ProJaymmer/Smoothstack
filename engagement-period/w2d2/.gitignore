@@ -1,0 +1,7 @@
+.ipynb
+mylog.log
+.module
+.env
+.vscode
+.DS_Store
+*.pyc

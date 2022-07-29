@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+<!-- The extends tag is used to declare a parent template. It should be the very first tag used in a child template and a
+child template can only extend up to one parent template. To summarize, parent templates define blocks and child
+templates will override the contents of those blocks. -->
+
+<!-- Jinja is what allows you to create embedded coding constructs with Python, like for loops, inside the HTML. -->
+<h1>{% block title %} Logout Page {% endblock %}</h1>
+
+{% block content %}
+<div class='logout'>
+    <p>You have logged out.</p>
+    <p>Please log back in to see content.</p>
+</div>
+{% endblock %}
